@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from demo.tailadmin.com/500 by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 07 Oct 2026 10:42:33 GMT -->
+<head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>
+      500 Error Page | TailAdmin - Tailwind CSS Admin Dashboard Template
+    </title>
+  <link rel="icon" href="favicon.ico"><link href="style.css" rel="stylesheet"></head>
+  <body
+    x-data="{ page: 'page500', 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
+    x-init="
+         darkMode = JSON.parse(localStorage.getItem('darkMode')) ?? false;
+         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+    :class="{'dark bg-gray-900': darkMode === true}"
+  >
+    <!-- ===== Preloader Start ===== -->
+    <div
+  x-show="loaded"
+  x-init="window.addEventListener('DOMContentLoaded', () => {setTimeout(() => loaded = false, 500)})"
+  class="fixed top-0 left-0 z-999999 flex h-screen w-screen items-center justify-center bg-white dark:bg-black"
+>
+  <div
+    class="border-brand-500 h-16 w-16 animate-spin rounded-full border-4 border-solid border-t-transparent"
+  ></div>
+</div>
+
+    <!-- ===== Preloader End ===== -->
+
+    <!-- ===== Page Wrapper Start ===== -->
+    <div
+      class="relative z-1 flex min-h-screen flex-col items-center justify-center overflow-hidden p-6"
+    >
+      <!-- ===== Common Grid Shape Start ===== -->
+      <div
+  class="absolute top-0 right-0 -z-1 w-full max-w-[250px] xl:max-w-[450px] rtl:right-auto rtl:left-0 rtl:-scale-x-100"
+>
+  <img src="src/images/shape/grid-01.svg" alt="grid" />
+</div>
+<div
+  class="absolute bottom-0 left-0 -z-1 w-full max-w-[250px] rotate-180 xl:max-w-[450px] rtl:right-0 rtl:left-auto rtl:-scale-x-100"
+>
+  <img src="src/images/shape/grid-01.svg" alt="grid" />
+</div>
+
+      <!-- ===== Common Grid Shape End ===== -->
+
+      <div class="mx-auto w-full max-w-[242px] text-center sm:max-w-[562px]">
+        <h1
+          class="text-title-md xl:text-title-2xl mb-8 font-bold text-gray-800 dark:text-white/90"
+        >
+          ERROR
+        </h1>
+
+        <img src="src/images/error/500.svg" alt="500" class="dark:hidden" />
+        <img
+          src="src/images/error/500-dark.svg"
+          alt="500"
+          class="hidden dark:block"
+        />
+
+        <p
+          class="mt-10 mb-6 text-base text-gray-700 sm:text-lg dark:text-gray-400"
+        >
+          We can’t seem to find the page you are looking for!
+        </p>
+
+        <a
+          href="index.html"
+          class="shadow-theme-xs inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+        >
+          Back to Home Page
+        </a>
+      </div>
+
+      <!-- Footer -->
+      <p
+        class="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400"
+      >
+        &copy; <span id="year"></span> - TailAdmin
+      </p>
+    </div>
+    <!-- ===== Page Wrapper End ===== -->
+  <script defer src="bundle.js"></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"79f5d289b5024f39982f1bcfdb90d63d","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+
+<!-- Mirrored from demo.tailadmin.com/500 by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 07 Oct 2026 10:42:34 GMT -->
+</html>
