@@ -38,7 +38,7 @@
 
                     <div>
                         <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">
-                            Créer un agent Support
+                            Créer un nouvel agent Support
                         </h1>
 
                         <p class="mt-1 text-theme-sm text-gray-500 dark:text-gray-400">

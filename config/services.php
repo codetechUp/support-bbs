@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'manypaycash' => [
+        'url' => env('MANYPAYCASH_API_URL', 'https://www.manypaycash.com/api/support/partenaire'),
+        'users_url' => env('MANYPAYCASH_USERS_API_URL', 'https://www.manypaycash.com/api/support/getUsers'),
+        'search_by_external_url' => env('MANYPAYCASH_SEARCH_TR_BY_EXTERNAL_URL', 'https://www.manypaycash.com/api/support/searchTrByExternalId'),
+        'search_by_internal_url' => env('MANYPAYCASH_SEARCH_TR_BY_INTERNAL_URL', 'https://www.manypaycash.com/api/support/searchTrByInternalId'),
+        'api_key' => env('MANYPAYCASH_API_KEY', 'VWhxZzJiLW5uUGNTbThFLW5DemNSZkJfZ3dTeHNWRmNMUk96aVpjRzIxNTc2MTk4NjE'),
+    ],
+
 ];

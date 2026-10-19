@@ -214,29 +214,14 @@ if (darkMode) {
                 </a>
             </li>
 
-        @else
-
-            {{-- =================================================
-                 SUPPORT — SUPERVISION
-            ================================================== --}}
-
-            <li class="pt-2">
-                <div
-                    class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-400"
-                    :class="sidebarToggle ? 'xl:hidden' : ''"
-                >
-                    Supervision
-                </div>
-            </li>
-
-            {{-- STATUT DES SERVICES --}}
+            {{-- ACCÈS SUPERVISION SERVICES (POUR ADMIN) --}}
             <li>
                 <a
-                    href="#"
-                    class="menu-item group menu-item-inactive"
+                    href="{{ route('support.dashboard') }}"
+                    class="menu-item group {{ request()->routeIs('support.dashboard') ? 'menu-item-active' : 'menu-item-inactive' }}"
                 >
                     <svg
-                        class="menu-item-icon-inactive"
+                        class="{{ request()->routeIs('support.dashboard') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
                         width="24"
                         height="24"
                         viewBox="0 0 24 24"
@@ -257,6 +242,205 @@ if (darkMode) {
                         :class="sidebarToggle ? 'xl:hidden' : ''"
                     >
                         Statut des services
+                    </span>
+                </a>
+            </li>
+
+            {{-- LISTE DES CLIENTS (ADMIN) --}}
+            <li>
+                <a
+                    href="{{ route('support.clients.index') }}"
+                    class="menu-item group {{ request()->routeIs('support.clients.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
+                >
+                    <svg
+                        class="{{ request()->routeIs('support.clients.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M16 21V19C16 16.7909 14.2091 15 12 15H7C4.79086 15 3 16.7909 3 19V21"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+                        <circle
+                            cx="9.5"
+                            cy="7"
+                            r="3.5"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                        <path
+                            d="M19 8V14M22 11H16"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+
+                    <span
+                        class="menu-item-text"
+                        :class="sidebarToggle ? 'xl:hidden' : ''"
+                    >
+                        Liste des clients
+                    </span>
+                </a>
+            </li>
+
+            {{-- RECHERCHE TRANSACTIONS (ADMIN) --}}
+            <li>
+                <a
+                    href="{{ route('support.transactions.index') }}"
+                    class="menu-item group {{ request()->routeIs('support.transactions.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
+                >
+                    <svg
+                        class="{{ request()->routeIs('support.transactions.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+
+                    <span
+                        class="menu-item-text"
+                        :class="sidebarToggle ? 'xl:hidden' : ''"
+                    >
+                        Recherche transactions
+                    </span>
+                </a>
+            </li>
+
+        @else
+
+            {{-- =================================================
+                 SUPPORT — SUPERVISION
+            ================================================== --}}
+
+            <li class="pt-2">
+                <div
+                    class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-400"
+                    :class="sidebarToggle ? 'xl:hidden' : ''"
+                >
+                    Supervision
+                </div>
+            </li>
+
+            {{-- STATUT DES SERVICES --}}
+            <li>
+                <a
+                    href="{{ route('support.dashboard') }}#services-section"
+                    class="menu-item group {{ request()->routeIs('support.dashboard') ? 'menu-item-active' : 'menu-item-inactive' }}"
+                >
+                    <svg
+                        class="{{ request()->routeIs('support.dashboard') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M4 12H7L9 5L13 19L15 12H20"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+
+                    <span
+                        class="menu-item-text"
+                        :class="sidebarToggle ? 'xl:hidden' : ''"
+                    >
+                        Statut des services
+                    </span>
+                </a>
+            </li>
+
+            {{-- LISTE DES CLIENTS (SUPPORT) --}}
+            <li>
+                <a
+                    href="{{ route('support.clients.index') }}"
+                    class="menu-item group {{ request()->routeIs('support.clients.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
+                >
+                    <svg
+                        class="{{ request()->routeIs('support.clients.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M16 21V19C16 16.7909 14.2091 15 12 15H7C4.79086 15 3 16.7909 3 19V21"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+                        <circle
+                            cx="9.5"
+                            cy="7"
+                            r="3.5"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                        <path
+                            d="M19 8V14M22 11H16"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+
+                    <span
+                        class="menu-item-text"
+                        :class="sidebarToggle ? 'xl:hidden' : ''"
+                    >
+                        Liste des clients
+                    </span>
+                </a>
+            </li>
+
+            {{-- RECHERCHE TRANSACTIONS (SUPPORT) --}}
+            <li>
+                <a
+                    href="{{ route('support.transactions.index') }}"
+                    class="menu-item group {{ request()->routeIs('support.transactions.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
+                >
+                    <svg
+                        class="{{ request()->routeIs('support.transactions.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+
+                    <span
+                        class="menu-item-text"
+                        :class="sidebarToggle ? 'xl:hidden' : ''"
+                    >
+                        Recherche transactions
                     </span>
                 </a>
             </li>

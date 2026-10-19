@@ -44,7 +44,26 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/supports', [AdminController::class, 'storeSupport'])->name('supports.store');
 });
 
-// Espace réservé à l'Agent Support
-Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\TransactionController;
+
+// Espace réservé à l'Agent Support (et accessible à l'Administrateur)
+Route::middleware(['auth', 'role:support|admin'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [SupportController::class, 'dashboard'])->name('dashboard');
+    Route::get('/services/status', [SupportController::class, 'servicesStatus'])->name('services.status');
+    Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('/clients/data', [ClientController::class, 'data'])->name('clients.data');
+
+    // Recherche de transactions
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::post('/transactions/search', [TransactionController::class, 'search'])->name('transactions.search');
 });
+
+// Endpoint direct demandé : GET /searchTrByInternalId/:internal_id
+Route::get('/searchTrByInternalId/{internal_id}', [TransactionController::class, 'searchByInternalIdEndpoint'])
+    ->name('search.internal');
+
+// Endpoint direct : Recherche par external_id
+Route::match(['get', 'post'], '/searchTrByExternalId/{external_id?}', [TransactionController::class, 'searchByExternalIdEndpoint'])
+    ->name('search.external');
+
