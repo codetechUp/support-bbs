@@ -21,23 +21,44 @@ class TransactionController extends Controller
         $externalId = $request->query('external_id');
         $internalId = $request->query('internal_id');
         $queryId = $request->query('id', $externalId ?: $internalId);
-        $type = $request->query('type', $internalId ? 'internal_id' : 'external_id');
+        $type = $request->query(
+            'type',
+            $internalId ? 'internal_id' : 'external_id'
+        );
 
         $initialResult = null;
-        if (!empty($queryId)) {
+
+        if (! empty($queryId)) {
             if ($type === 'internal_id') {
-                $initialResult = $this->transactionService->searchByInternalId($queryId);
+                $initialResult = $this->transactionService
+                    ->searchByInternalId($queryId);
             } elseif ($type === 'external_id') {
-                $initialResult = $this->transactionService->searchByExternalId($queryId);
+                $initialResult = $this->transactionService
+                    ->searchByExternalId($queryId);
             } else {
-                $initialResult = $this->transactionService->searchAuto($queryId);
+                $initialResult = $this->transactionService
+                    ->searchAuto($queryId);
             }
+        }
+
+        $customers = [];
+        $customersError = null;
+
+        try {
+            $customers = $this->transactionService->getCustomers();
+        } catch (\Throwable $e) {
+            report($e);
+
+            $customersError =
+                'Impossible de charger la liste des clients pour le moment.';
         }
 
         return view('support.transactions.index', [
             'initialQuery' => $queryId,
             'initialType' => $type,
             'initialResult' => $initialResult,
+            'customers' => $customers,
+            'customersError' => $customersError,
         ]);
     }
 
@@ -112,5 +133,29 @@ class TransactionController extends Controller
             'initialType' => 'external_id',
             'initialResult' => $result,
         ]);
+    }
+
+    /**
+     * Recherche les transactions d'un client sur une période.
+     */
+    public function searchCustomerTransactions(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'id_customer' => ['required', 'integer', 'min:1'],
+            'debut' => ['required', 'date_format:Y-m-d'],
+            'fin' => [
+                'required',
+                'date_format:Y-m-d',
+                'after_or_equal:debut',
+            ],
+        ]);
+
+        $result = $this->transactionService->searchCustomerTransactions(
+            (int) $validated['id_customer'],
+            $validated['debut'],
+            $validated['fin']
+        );
+
+        return response()->json($result);
     }
 }

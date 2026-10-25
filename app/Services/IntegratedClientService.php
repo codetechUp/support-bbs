@@ -9,310 +9,271 @@ use Illuminate\Support\Facades\Log;
 
 class IntegratedClientService
 {
-    /**
-     * Cache TTL in seconds
-     */
     protected int $cacheTtl = 60;
+
+    protected string $cacheKey = 'manypaycash_integrated_clients_list';
 
     public function __construct(
         protected PartnerServiceStatusService $serviceStatusService
     ) {}
 
     /**
-     * Récupère la liste complète des clients intégrés avec leurs métadonnées.
+     * Retourne les clients intégrés depuis l'API ManyPayCash.
+     * Seules les réponses réussies sont mises en cache.
      */
     public function getClients(bool $forceRefresh = false): array
     {
-        $cacheKey = 'manypaycash_integrated_clients_list';
-
         if ($forceRefresh) {
-            Cache::forget($cacheKey);
+            Cache::forget($this->cacheKey);
         }
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function () {
-            return $this->fetchAndFormatClients();
-        });
+        if (! $forceRefresh) {
+            $cached = Cache::get($this->cacheKey);
+
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $result = $this->fetchAndFormatClients();
+
+        if (($result['_api_success'] ?? false) === true) {
+            Cache::put(
+                $this->cacheKey,
+                $this->removeInternalFields($result),
+                $this->cacheTtl
+            );
+        }
+
+        return $this->removeInternalFields($result);
     }
 
     /**
-     * Appelle l'endpoint distant et formate les clients selon le cahier des charges.
+     * Appelle GET /api/support/customers.
      */
     protected function fetchAndFormatClients(): array
     {
-        $url = config('services.manypaycash.users_url', 'https://www.manypaycash.com/api/support/getUsers');
-        $apiKey = config('services.manypaycash.api_key', 'VWhxZzJiLW5uUGNTbThFLW5DemNSZkJfZ3dTeHNWRmNMUk96aVpjRzIxNTc2MTk4NjE');
+        $url = config(
+            'services.manypaycash.customers_url',
+            'https://www.manypaycash.com/api/support/customers'
+        );
 
-        $remoteUsers = [];
-        $isError = false;
+        // La clé doit être configurée dans le fichier .env.
+        $apiKey = config('services.manypaycash.api_key');
+
+        if (! is_string($apiKey) || trim($apiKey) === '') {
+            Log::error(
+                'API ManyPayCash : la clé API services.manypaycash.api_key est absente.'
+            );
+
+            return $this->emptyResult();
+        }
 
         try {
-            $response = Http::timeout(10)
+            $response = Http::timeout(15)
                 ->connectTimeout(5)
                 ->withHeaders([
                     'x-api-key' => $apiKey,
                     'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
                     'User-Agent' => 'ManyPayCash-Support-Admin/1.0',
                 ])
-                ->post($url, [
-                    'page' => 1,
-                    'limit' => 100,
-                ]);
+                ->get($url);
 
-            if ($response->successful()) {
-                $body = $response->json();
-                $remoteUsers = $body['data'] ?? [];
-            } else {
-                $isError = true;
-                Log::warning('Échec appel getUsers ManyPayCash: ' . $response->status());
+            if (! $response->successful()) {
+                Log::warning(
+                    'Échec API ManyPayCash customers.',
+                    ['http_status' => $response->status()]
+                );
+
+                return $this->emptyResult();
             }
+
+            // L'API renvoie directement un tableau JSON.
+            $customers = $response->json();
+
+            if (! is_array($customers) || ! $this->isCustomerList($customers)) {
+                Log::warning(
+                    'Réponse inattendue de l’API ManyPayCash customers.'
+                );
+
+                return $this->emptyResult();
+            }
+
+            $clients = [];
+
+            foreach ($customers as $customer) {
+                $client = $this->formatCustomer($customer);
+
+                if ($client !== null) {
+                    $clients[] = $client;
+                }
+            }
+
+            return [
+                'summary' => $this->buildSummary($clients),
+                'clients' => $clients,
+                '_api_success' => true,
+            ];
         } catch (\Throwable $e) {
-            $isError = true;
-            Log::error('Exception appel getUsers ManyPayCash: ' . $e->getMessage());
+            // Ne pas journaliser la clé API ni le contenu sensible de la réponse.
+            Log::error(
+                'Exception lors de l’appel à l’API ManyPayCash customers.',
+                ['exception' => $e::class]
+            );
+
+            return $this->emptyResult();
+        }
+    }
+
+    /**
+     * Vérifie que la réponse est bien une liste d'objets clients.
+     */
+    protected function isCustomerList(array $customers): bool
+    {
+        if ($customers === []) {
+            return true;
         }
 
-        // Récupérer l'état actuel des services partenaires pour corréler la disponibilité des services utilisés
-        $partnerStatusData = $this->serviceStatusService->getStatusData();
-        $partners = $partnerStatusData['partners'] ?? [];
-        $partnerMap = collect($partners)->keyBy('nom');
-
-        $clients = [];
-
-        // 1. Mapper les utilisateurs distants retournés par l'API
-        foreach ($remoteUsers as $user) {
-            $fullName = trim(($user['prenom'] ?? '') . ' ' . ($user['nom'] ?? ''));
-            if (empty($fullName)) {
-                $fullName = $user['email'] ?? 'Client #' . ($user['id'] ?? 1);
-            } else {
-                $fullName = ucwords(strtolower($fullName));
-            }
-
-            $partnerId = 'PARTNER-' . str_pad((string)($user['id'] ?? 1), 4, '0', STR_PAD_LEFT);
-            $accountStatus = strtoupper($user['etat'] ?? 'ACTIVE');
-            $environment = ($user['id'] ?? 1) % 2 === 0 ? 'Sandbox' : 'Production';
-
-            $rawDate = $user['createdAt'] ?? null;
-            $integratedDate = $rawDate ? Carbon::parse($rawDate)->format('d/m/Y à H:i') : '10/10/2026 à 09:15';
-
-            // Services associés et leurs statuts opérationnels
-            $usedServices = [
-                [
-                    'name' => 'Wave senegal',
-                    'code' => 'snwave',
-                    'status' => $partnerMap->get('Wave senegal')['status'] ?? 'UP',
-                ],
-                [
-                    'name' => 'Orange money senegal',
-                    'code' => 'snom',
-                    'status' => $partnerMap->get('Orange money senegal')['status'] ?? 'UP',
-                ],
-            ];
-
-            $clients[] = [
-                'id' => $user['id'] ?? 1,
-                'client_name' => $fullName,
-                'email' => $user['email'] ?? 'contact@client.com',
-                'partner_id' => $partnerId,
-                'account_status' => $accountStatus,
-                'environment' => $environment,
-                'integration_date' => $integratedDate,
-                'integration_timestamp' => $rawDate ? Carbon::parse($rawDate)->timestamp : 1791623700,
-                'services_status' => $this->determineClientOverallServiceStatus($usedServices),
-                'used_services' => $usedServices,
-                'is_remote' => true,
-            ];
-        }
-
-        // 2. Compléter avec les clients intégrés de la plateforme (pour permettre une démonstration complète et robuste des filtres)
-        $additionalClients = $this->getPreconfiguredIntegratedClients($partnerMap);
-
-        foreach ($additionalClients as $client) {
-            // Éviter les doublons éventuels d'ID
-            if (!collect($clients)->contains('partner_id', $client['partner_id'])) {
-                $clients[] = $client;
+        foreach ($customers as $customer) {
+            if (! is_array($customer) || ! array_key_exists('id', $customer)) {
+                return false;
             }
         }
 
+        return true;
+    }
+
+    /**
+     * Convertit un client API vers le format attendu par la vue Blade.
+     */
+    protected function formatCustomer(array $customer): ?array
+    {
+        if (! isset($customer['id'])) {
+            return null;
+        }
+
+        $id = (string) $customer['id'];
+
+        $rawName = trim((string) ($customer['entreprise'] ?? ''));
+        $clientName = $rawName !== '' ? $rawName : 'Client #'.$id;
+
+        $accountStatus = strtoupper(
+            trim((string) ($customer['etat'] ?? 'UNKNOWN'))
+        );
+
+        $environment = $this->formatEnvironment(
+            $customer['env'] ?? null
+        );
+
+        $rawDate = $customer['createdAt'] ?? null;
+        $timestamp = null;
+        $formattedDate = 'Inconnue';
+
+        if (is_string($rawDate) && trim($rawDate) !== '') {
+            try {
+                $date = Carbon::parse($rawDate);
+                $timestamp = $date->timestamp;
+                $formattedDate = $date->format('d/m/Y à H:i');
+            } catch (\Throwable) {
+                // La date reste inconnue si le format est invalide.
+            }
+        }
+
+        /*
+         * L'API customers ne fournit pas de relation fiable entre un client
+         * et les services de l'API partenaires.
+         * Ne pas inventer de services ou de statut opérationnel client.
+         */
+        return [
+            'id' => $id,
+            'client_name' => $clientName,
+
+            // Ces champs ne sont pas fournis par l'endpoint customers.
+            'email' => null,
+
+            // L'API fournit un id client, pas un Partner ID distinct.
+            'partner_id' => $id,
+
+            'account_status' => $accountStatus,
+            'environment' => $environment,
+            'integration_date' => $formattedDate,
+            'integration_timestamp' => $timestamp,
+
+            'services_status' => 'UNKNOWN',
+            'used_services' => [],
+
+            'is_remote' => true,
+        ];
+    }
+
+    /**
+     * Normalise l'environnement sans déduire sa valeur de l'identifiant.
+     */
+    protected function formatEnvironment(mixed $environment): string
+    {
+        $value = strtolower(trim((string) ($environment ?? '')));
+
+        return match ($value) {
+            'prod', 'production' => 'Production',
+            'dev', 'development', 'sandbox', 'test' => 'Sandbox',
+            default => 'Inconnu',
+        };
+    }
+
+    /**
+     * Construit les statistiques à partir des seuls clients reçus.
+     */
+    protected function buildSummary(array $clients): array
+    {
+        $activeCount = collect($clients)
+            ->where('account_status', 'ACTIVE')
+            ->count();
+
+        return [
+            'total_clients' => count($clients),
+            'active_clients' => $activeCount,
+            'inactive_clients' => count($clients) - $activeCount,
+            'production_clients' => collect($clients)
+                ->where('environment', 'Production')
+                ->count(),
+            'sandbox_clients' => collect($clients)
+                ->where('environment', 'Sandbox')
+                ->count(),
+            'unknown_environment_clients' => collect($clients)
+                ->where('environment', 'Inconnu')
+                ->count(),
+            'checked_at' => now()->format('H:i:s'),
+        ];
+    }
+
+    /**
+     * Structure stable en cas d'erreur.
+     * Une réponse en échec n'est pas mise en cache.
+     */
+    protected function emptyResult(): array
+    {
         return [
             'summary' => [
-                'total_clients' => count($clients),
-                'active_clients' => collect($clients)->where('account_status', 'ACTIVE')->count(),
-                'inactive_clients' => collect($clients)->whereIn('account_status', ['INACTIVE', 'SUSPENDED'])->count(),
-                'production_clients' => collect($clients)->where('environment', 'Production')->count(),
-                'sandbox_clients' => collect($clients)->where('environment', 'Sandbox')->count(),
+                'total_clients' => 0,
+                'active_clients' => 0,
+                'inactive_clients' => 0,
+                'production_clients' => 0,
+                'sandbox_clients' => 0,
+                'unknown_environment_clients' => 0,
                 'checked_at' => now()->format('H:i:s'),
             ],
-            'clients' => $clients,
+            'clients' => [],
+            '_api_success' => false,
         ];
     }
 
     /**
-     * Détermine le statut global des services utilisés par un client (UP, DEGRADED, DOWN).
+     * Retire le marqueur interne avant de retourner les données.
      */
-    protected function determineClientOverallServiceStatus(array $usedServices): string
+    protected function removeInternalFields(array $result): array
     {
-        $hasDown = false;
-        $hasDegraded = false;
+        unset($result['_api_success']);
 
-        foreach ($usedServices as $service) {
-            $st = strtoupper($service['status'] ?? 'UP');
-            if ($st === 'DOWN') {
-                $hasDown = true;
-            } elseif ($st === 'DEGRADED') {
-                $hasDegraded = true;
-            }
-        }
-
-        if ($hasDown) {
-            return 'DOWN';
-        }
-        if ($hasDegraded) {
-            return 'DEGRADED';
-        }
-        return 'UP';
-    }
-
-    /**
-     * Clients intégrés prédéfinis pour alimenter la liste et les filtres.
-     * Note de sécurité : AUCUNE balance ou solde client n'est présente.
-     */
-    protected function getPreconfiguredIntegratedClients($partnerMap): array
-    {
-        return [
-            [
-                'id' => 101,
-                'client_name' => 'AfriMarket Express',
-                'email' => 'tech@afrimarket-express.sn',
-                'partner_id' => 'PARTNER-0101',
-                'account_status' => 'ACTIVE',
-                'environment' => 'Production',
-                'integration_date' => '04/10/2026 à 11:20',
-                'integration_timestamp' => 1791112800,
-                'services_status' => 'UP',
-                'used_services' => [
-                    [
-                        'name' => 'Orange money senegal',
-                        'code' => 'snom',
-                        'status' => $partnerMap->get('Orange money senegal')['status'] ?? 'UP',
-                    ],
-                    [
-                        'name' => 'Wave senegal',
-                        'code' => 'snwave',
-                        'status' => $partnerMap->get('Wave senegal')['status'] ?? 'UP',
-                    ],
-                ],
-                'is_remote' => false,
-            ],
-            [
-                'id' => 102,
-                'client_name' => 'Jumia Sénégal Services',
-                'email' => 'api-support@jumia.sn',
-                'partner_id' => 'PARTNER-0102',
-                'account_status' => 'ACTIVE',
-                'environment' => 'Production',
-                'integration_date' => '28/09/2026 à 16:45',
-                'integration_timestamp' => 1790613900,
-                'services_status' => 'DEGRADED',
-                'used_services' => [
-                    [
-                        'name' => 'Mixx senegal',
-                        'code' => 'snmixx',
-                        'status' => $partnerMap->get('Mixx senegal')['status'] ?? 'DEGRADED',
-                    ],
-                    [
-                        'name' => 'Wave senegal',
-                        'code' => 'snwave',
-                        'status' => $partnerMap->get('Wave senegal')['status'] ?? 'UP',
-                    ],
-                ],
-                'is_remote' => false,
-            ],
-            [
-                'id' => 103,
-                'client_name' => 'Dakar E-Commerce SARL',
-                'email' => 'dev@dakarecommerce.com',
-                'partner_id' => 'PARTNER-0103',
-                'account_status' => 'ACTIVE',
-                'environment' => 'Sandbox',
-                'integration_date' => '08/10/2026 à 14:10',
-                'integration_timestamp' => 1791468600,
-                'services_status' => 'UP',
-                'used_services' => [
-                    [
-                        'name' => 'Wave cote d\'ivoire',
-                        'code' => 'ciwave',
-                        'status' => $partnerMap->get('Wave cote d\'ivoire')['status'] ?? 'DEGRADED',
-                    ],
-                    [
-                        'name' => 'Orange money senegal',
-                        'code' => 'snom',
-                        'status' => $partnerMap->get('Orange money senegal')['status'] ?? 'UP',
-                    ],
-                ],
-                'is_remote' => false,
-            ],
-            [
-                'id' => 104,
-                'client_name' => 'PayTech International',
-                'email' => 'operations@paytech-intl.com',
-                'partner_id' => 'PARTNER-0104',
-                'account_status' => 'SUSPENDED',
-                'environment' => 'Production',
-                'integration_date' => '15/08/2026 à 08:30',
-                'integration_timestamp' => 1786782600,
-                'services_status' => 'DOWN',
-                'used_services' => [
-                    [
-                        'name' => 'Bictorys',
-                        'code' => 'N/A',
-                        'status' => $partnerMap->get('Bictorys')['status'] ?? 'DOWN',
-                    ],
-                ],
-                'is_remote' => false,
-            ],
-            [
-                'id' => 105,
-                'client_name' => 'Sahel Logistics & Transport',
-                'email' => 'contact@sahel-logistics.ci',
-                'partner_id' => 'PARTNER-0105',
-                'account_status' => 'ACTIVE',
-                'environment' => 'Production',
-                'integration_date' => '11/10/2026 à 17:05',
-                'integration_timestamp' => 1791738300,
-                'services_status' => 'DEGRADED',
-                'used_services' => [
-                    [
-                        'name' => 'Paydeck',
-                        'code' => 'wave',
-                        'status' => $partnerMap->get('Paydeck')['status'] ?? 'DEGRADED',
-                    ],
-                    [
-                        'name' => 'Remita',
-                        'code' => 'MTNCM',
-                        'status' => $partnerMap->get('Remita')['status'] ?? 'DEGRADED',
-                    ],
-                ],
-                'is_remote' => false,
-            ],
-            [
-                'id' => 106,
-                'client_name' => 'Touba Digital Market',
-                'email' => 'admin@toubadigital.sn',
-                'partner_id' => 'PARTNER-0106',
-                'account_status' => 'INACTIVE',
-                'environment' => 'Sandbox',
-                'integration_date' => '02/10/2026 à 10:00',
-                'integration_timestamp' => 1790935200,
-                'services_status' => 'UP',
-                'used_services' => [
-                    [
-                        'name' => 'Orange money senegal',
-                        'code' => 'snom',
-                        'status' => $partnerMap->get('Orange money senegal')['status'] ?? 'UP',
-                    ],
-                ],
-                'is_remote' => false,
-            ],
-        ];
+        return $result;
     }
 }

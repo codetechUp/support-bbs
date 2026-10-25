@@ -41,6 +41,20 @@ return [
         'search_by_external_url' => env('MANYPAYCASH_SEARCH_TR_BY_EXTERNAL_URL', 'https://www.manypaycash.com/api/support/searchTrByExternalId'),
         'search_by_internal_url' => env('MANYPAYCASH_SEARCH_TR_BY_INTERNAL_URL', 'https://www.manypaycash.com/api/support/searchTrByInternalId'),
         'api_key' => env('MANYPAYCASH_API_KEY', 'VWhxZzJiLW5uUGNTbThFLW5DemNSZkJfZ3dTeHNWRmNMUk96aVpjRzIxNTc2MTk4NjE'),
+        'customers_url' => env(
+            'MANYPAYCASH_CUSTOMERS_URL',
+            'https://www.manypaycash.com/api/support/customers'
+        ),
+
+        'search_by_partner_url' => env(
+            'MANYPAYCASH_SEARCH_BY_PARTNER_URL',
+            'https://www.manypaycash.com/api/support/searchTrByPartnerId'
+        ),
+
+        'customer_transactions_url' => env(
+            'MANYPAYCASH_CUSTOMER_TRANSACTIONS_URL',
+            'https://www.manypaycash.com/api/support/customerTransactions'
+        ),
     ],
 
 ];
