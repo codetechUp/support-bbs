@@ -21,5 +21,6 @@ Route::get('/support/clients', [\App\Http\Controllers\ClientController::class, '
 // Recherche de transactions API
 Route::get('/searchTrByInternalId/{internal_id}', [\App\Http\Controllers\TransactionController::class, 'searchByInternalIdEndpoint'])->name('api.searchTrByInternalId');
 Route::match(['get', 'post'], '/searchTrByExternalId/{external_id?}', [\App\Http\Controllers\TransactionController::class, 'searchByExternalIdEndpoint'])->name('api.searchTrByExternalId');
+Route::post('/searchTrByPartnerId', [\App\Http\Controllers\TransactionController::class, 'verifyPartner'])->name('api.searchTrByPartnerId');
 Route::post('/support/transactions/search', [\App\Http\Controllers\TransactionController::class, 'search'])->name('api.support.transactions.search');
 

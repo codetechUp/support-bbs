@@ -1427,7 +1427,18 @@
                     async verifyPartnerTransaction(tr) {
                         if (!tr) return;
 
-                        const partner = String(tr.partner || tr.partenaire || tr.service_code || '').trim();
+                        // Priorité absolue au service_code comme demandé (ex: snwave au lieu de wave)
+                        const serviceCode = String(tr.service_code || tr.codeService || tr.code_service || '').trim();
+                        let partner = serviceCode;
+
+                        if (!partner) {
+                            partner = String(tr.partner || tr.partenaire || '').trim();
+                            if (partner.toLowerCase() === 'wave') {
+                                const country = String(tr.country_code || tr.codePays || 'sn').toLowerCase().trim();
+                                partner = (country || 'sn') + 'wave';
+                            }
+                        }
+
                         const idPartner = String(
                             tr.id_partner ||
                             tr.id_tr_partenaire ||
@@ -1442,7 +1453,7 @@
                         this.isPartnerModalOpen = true;
 
                         if (!partner || !idPartner) {
-                            this.partnerVerificationError = "Impossible de lancer la vérification : le nom du partenaire ou l'identifiant partenaire (id_partner / id_tr_partenaire) n'est pas renseigné pour cette transaction.";
+                            this.partnerVerificationError = "Impossible de lancer la vérification : le nom du partenaire (ou service_code) ou l'identifiant partenaire (id_partner / id_tr_partenaire) n'est pas renseigné pour cette transaction.";
                             return;
                         }
 
@@ -1458,6 +1469,7 @@
                                 },
                                 body: JSON.stringify({
                                     partner: partner,
+                                    service_code: partner,
                                     id_partner: idPartner,
                                 }),
                             });

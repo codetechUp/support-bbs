@@ -250,22 +250,34 @@ class TransactionSearchTest extends TestCase
 
         Http::fake([
             $partnerUrl => Http::response([
-                'partner' => 'wave',
-                'id_partner' => 'wave-ref-12345',
-                'status' => 'completed',
+                'id' => 'cos-26hva2prg1xr2',
+                'payment_status' => 'succeeded',
             ], 200),
         ]);
 
         $response = $this->postJson('/searchTrByPartnerId', [
             'partner' => 'wave',
-            'id_partner' => 'wave-ref-12345',
+            'id_partner' => 'cos-26hva2prg1xr2',
         ]);
 
         $response->assertOk();
         $response->assertJson([
             'success' => true,
-            'partner' => 'wave',
-            'id_partner' => 'wave-ref-12345',
+            'partner' => 'snwave',
+            'id_partner' => 'cos-26hva2prg1xr2',
+        ]);
+
+        // Test avec service_code explicite
+        $response2 = $this->postJson('/searchTrByPartnerId', [
+            'service_code' => 'snwave',
+            'id_partner' => 'cos-26hva2prg1xr2',
+        ]);
+
+        $response2->assertOk();
+        $response2->assertJson([
+            'success' => true,
+            'partner' => 'snwave',
+            'id_partner' => 'cos-26hva2prg1xr2',
         ]);
     }
 

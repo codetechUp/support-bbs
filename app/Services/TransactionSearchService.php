@@ -321,10 +321,18 @@ class TransactionSearchService
      * POST /searchTrByPartnerId
      * Payload: { "partner": "...", "id_partner": "..." }
      */
-    public function searchByPartnerId(string $partner, string $idPartner): array
+    public function searchByPartnerId(string $partner, string $idPartner, ?string $serviceCode = null): array
     {
         $partner = trim($partner);
         $idPartner = trim($idPartner);
+        $serviceCode = $serviceCode !== null ? trim($serviceCode) : '';
+
+        // Si service_code est fourni, priorité à celui-ci (ex: snwave au lieu de wave)
+        if ($serviceCode !== '') {
+            $partner = $serviceCode;
+        } elseif (strtolower($partner) === 'wave') {
+            $partner = 'snwave';
+        }
 
         if ($partner === '' || $idPartner === '') {
             return [
@@ -350,6 +358,7 @@ class TransactionSearchService
 
         try {
             $response = $this->apiRequest()
+                ->asJson()
                 ->post($url, [
                     'partner' => $partner,
                     'id_partner' => $idPartner,
@@ -577,6 +586,15 @@ class TransactionSearchService
             $numero = $infoPay['numero'] ?? null;
             $indicatif = $infoPay['indicatif'] ?? '';
 
+            $serviceCode = $item['codeService'] ?? $item['service_code'] ?? null;
+            $rawPartner = $item['partenaire'] ?? $item['partner'] ?? null;
+            $partnerResolved = $rawPartner;
+            if (! empty($serviceCode)) {
+                if (empty($partnerResolved) || strtolower((string) $partnerResolved) === 'wave') {
+                    $partnerResolved = $serviceCode;
+                }
+            }
+
             $formatted[] = [
                 'external_id' => $item['external_id']
                     ?? $item['externalId']
@@ -591,7 +609,8 @@ class TransactionSearchService
                     ?? $item['customer_id']
                     ?? ($extraContext['customer_id'] ?? null),
 
-                'partner' => $item['partenaire'] ?? $item['partner'] ?? null,
+                'partner' => $partnerResolved,
+                'partenaire' => $partnerResolved,
 
                 'id_partner' => $item['id_tr_partenaire']
                     ?? $item['idTrPartenaire']

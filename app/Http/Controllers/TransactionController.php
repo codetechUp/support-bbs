@@ -170,22 +170,65 @@ class TransactionController extends Controller
      */
     public function verifyPartner(Request $request): JsonResponse
     {
-        $partner = trim((string) ($request->input('partner') ?? ''));
+        $rawJson = [];
+        $content = trim($request->getContent());
+        if ($content !== '') {
+            $decoded = json_decode($content, true);
+            if (is_array($decoded)) {
+                $rawJson = $decoded;
+            }
+        }
+
+        $serviceCode = trim((string) (
+            $request->input('service_code')
+            ?? $rawJson['service_code']
+            ?? $request->input('code_service')
+            ?? $rawJson['code_service']
+            ?? $request->input('codeService')
+            ?? $rawJson['codeService']
+            ?? ''
+        ));
+
+        $partner = trim((string) (
+            $request->input('partner')
+            ?? $rawJson['partner']
+            ?? $request->input('partenaire')
+            ?? $rawJson['partenaire']
+            ?? ''
+        ));
+
+        // Priorité au service_code si renseigné (ex: snwave au lieu de wave)
+        if ($serviceCode !== '') {
+            $partner = $serviceCode;
+        } elseif (strtolower($partner) === 'wave') {
+            $country = strtolower(trim((string) (
+                $request->input('country_code')
+                ?? $rawJson['country_code']
+                ?? $request->input('codePays')
+                ?? $rawJson['codePays']
+                ?? 'sn'
+            )));
+            $partner = ($country !== '' ? $country : 'sn').'wave';
+        }
+
         $idPartner = trim((string) (
             $request->input('id_partner')
+            ?? $rawJson['id_partner']
             ?? $request->input('id_tr_partenaire')
+            ?? $rawJson['id_tr_partenaire']
             ?? $request->input('partner_transaction_id')
+            ?? $rawJson['partner_transaction_id']
             ?? ''
         ));
 
         if ($partner === '' || $idPartner === '') {
             return response()->json([
                 'success' => false,
-                'message' => 'Les paramètres "partner" et "id_partner" sont obligatoires pour la vérification.',
+                'message' => 'Les paramètres "partner" (ou "service_code") et "id_partner" sont obligatoires pour la vérification.',
             ], 422);
         }
 
-        $result = $this->transactionService->searchByPartnerId($partner, $idPartner);
+        $result = $this->transactionService->searchByPartnerId($partner, $idPartner, $serviceCode ?: null);
 
         return response()->json($result);
     }
