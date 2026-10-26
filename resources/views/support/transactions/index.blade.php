@@ -1001,27 +1001,31 @@
         {{-- ============================================================
              MODAL : VÉRIFICATION DIRECTE CHEZ LE PARTENAIRE
         ============================================================= --}}
+        {{-- ============================================================
+             MODAL : VÉRIFICATION DIRECTE CHEZ LE PARTENAIRE
+        ============================================================= --}}
         <div x-show="isPartnerModalOpen" x-cloak
-            class="fixed inset-0 z-999999 flex items-center justify-center p-4 sm:p-6 bg-gray-900/70 backdrop-blur-sm overflow-y-auto"
+            class="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-sm overflow-y-auto"
+            style="display: flex; align-items: center; justify-content: center;"
             @keydown.escape.window="closePartnerModal()">
-            <div class="relative w-full max-w-xl my-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-gray-900 max-h-[90vh] overflow-y-auto"
+            <div class="relative w-full max-w-md mx-auto my-auto rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-2xl dark:border-gray-800 dark:bg-gray-900 max-h-[85vh] overflow-y-auto"
                 @click.outside="closePartnerModal()">
 
                 {{-- Header du modal partenaire --}}
-                <div class="flex items-start justify-between border-b border-gray-100 pb-4 dark:border-gray-800">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex items-start justify-between border-b border-gray-100 pb-3.5 dark:border-gray-800">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
+                            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-gray-800 dark:text-white">Vérification chez le Partenaire</h3>
-                            <p class="text-xs text-gray-400">Interrogation directe via l'endpoint <span class="font-mono text-indigo-600 dark:text-indigo-400">POST /searchTrByPartnerId</span></p>
+                            <h3 class="text-sm sm:text-base font-bold text-gray-800 dark:text-white">Vérification Partenaire</h3>
+                            <p class="text-3xs text-gray-400 font-mono">POST /searchTrByPartnerId</p>
                         </div>
                     </div>
                     <button type="button" @click="closePartnerModal()"
-                        class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300">
+                        class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -1029,71 +1033,115 @@
                 </div>
 
                 {{-- Corps du modal partenaire --}}
-                <div class="mt-5 space-y-4">
+                <div class="mt-4 space-y-3.5">
 
                     {{-- Payload envoyé : partner & id_partner --}}
-                    <div class="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-900/40 dark:bg-indigo-950/20 text-xs">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20 text-xs">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div>
-                                <span class="font-semibold uppercase tracking-wider text-3xs text-indigo-500">Partenaire (partner)</span>
-                                <p class="mt-0.5 font-bold uppercase text-gray-800 dark:text-white" x-text="verifyingPartnerName || '—'"></p>
+                                <span class="font-semibold uppercase tracking-wider text-3xs text-indigo-500">Partenaire</span>
+                                <p class="mt-0.5 font-bold uppercase text-gray-800 dark:text-white text-xs" x-text="verifyingPartnerName || '—'"></p>
                             </div>
                             <div>
-                                <span class="font-semibold uppercase tracking-wider text-3xs text-indigo-500">ID Partenaire (id_partner)</span>
-                                <p class="mt-0.5 font-mono text-gray-800 dark:text-white break-all" x-text="verifyingPartnerId || '—'"></p>
+                                <span class="font-semibold uppercase tracking-wider text-3xs text-indigo-500">ID Partenaire</span>
+                                <p class="mt-0.5 font-mono text-gray-800 dark:text-white break-all text-xs" x-text="verifyingPartnerId || '—'"></p>
                             </div>
                         </div>
                     </div>
 
                     {{-- Chargement en cours --}}
-                    <div x-show="isPartnerVerifying" class="py-8 text-center space-y-3">
-                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                            <svg class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div x-show="isPartnerVerifying" class="py-6 text-center space-y-2.5">
+                        <div class="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
+                            <svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                         </div>
-                        <p class="text-sm font-semibold text-gray-800 dark:text-white">Interrogation du partenaire en cours...</p>
-                        <p class="text-xs text-gray-400">Veuillez patienter pendant la validation de la transaction auprès du prestataire.</p>
+                        <p class="text-xs font-semibold text-gray-800 dark:text-white">Interrogation du partenaire en cours...</p>
+                        <p class="text-3xs text-gray-400">Veuillez patienter pendant la validation de la transaction.</p>
                     </div>
 
                     {{-- Erreur vérification --}}
                     <div x-show="partnerVerificationError && !isPartnerVerifying" x-cloak role="alert"
-                        class="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
-                        <div class="flex items-start gap-2.5">
+                        class="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+                        <div class="flex items-start gap-2">
                             <svg class="h-4 w-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span x-text="partnerVerificationError"></span>
+                            <span class="text-2xs sm:text-xs" x-text="partnerVerificationError"></span>
                         </div>
                     </div>
 
                     {{-- Résultat avec succès --}}
-                    <div x-show="partnerVerificationResult && partnerVerificationResult.success && !isPartnerVerifying" x-cloak class="space-y-4">
-                        <div class="rounded-xl border border-success-200 bg-success-50/70 p-4 dark:border-success-900/40 dark:bg-success-900/20">
+                    <div x-show="partnerVerificationResult && partnerVerificationResult.success && !isPartnerVerifying" x-cloak class="space-y-3">
+                        <div class="rounded-xl border border-success-200 bg-success-50/70 p-3 dark:border-success-900/40 dark:bg-success-900/20">
                             <div class="flex items-center gap-2">
-                                <span class="flex h-2.5 w-2.5 rounded-full bg-success-500"></span>
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-success-800 dark:text-success-300">
+                                <span class="flex h-2 w-2 rounded-full bg-success-500"></span>
+                                <h4 class="text-3xs font-bold uppercase tracking-wider text-success-800 dark:text-success-300">
                                     Réponse reçue du Partenaire
                                 </h4>
                             </div>
-                            <p class="mt-1 text-xs text-success-700 dark:text-success-400"
+                            <p class="mt-1 text-2xs font-medium text-success-700 dark:text-success-400"
                                 x-text="partnerVerificationResult?.message || 'Transaction vérifiée avec succès.'"></p>
                         </div>
                     </div>
 
-                    {{-- Données détaillées retournées (disponibles en succès comme en retour d'erreur partenaire) --}}
-                    <div x-show="partnerVerificationResult && partnerVerificationResult.data && !isPartnerVerifying" x-cloak class="rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40 text-xs">
-                        <span class="text-3xs font-semibold uppercase tracking-wider text-gray-400">Détails de la réponse brute du partenaire :</span>
-                        <pre class="mt-2 max-h-60 overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-2xs text-gray-100 dark:bg-black/60"
+                    {{-- Données détaillées retournées avec affichage haute lisibilité --}}
+                    <div x-show="partnerVerificationResult && partnerVerificationResult.data && !isPartnerVerifying" x-cloak class="rounded-xl border border-gray-200 bg-gray-50/70 p-3.5 dark:border-gray-800 dark:bg-gray-800/40 text-xs">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-3xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Détails de la réponse brute :</span>
+                            <button type="button"
+                                @click="navigator.clipboard.writeText(JSON.stringify(partnerVerificationResult?.data, null, 2)); copiedPartnerData = true; setTimeout(() => copiedPartnerData = false, 2000)"
+                                class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-3xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition shadow-2xs">
+                                <svg x-show="!copiedPartnerData" class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <svg x-show="copiedPartnerData" x-cloak class="w-3 h-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span x-text="copiedPartnerData ? 'Copié !' : 'Copier JSON'"></span>
+                            </button>
+                        </div>
+
+                        {{-- Synthèse rapide des propriétés clés --}}
+                        <template x-if="typeof partnerVerificationResult?.data === 'object' && partnerVerificationResult?.data !== null && !Array.isArray(partnerVerificationResult?.data)">
+                            <div class="mb-2.5 space-y-1.5 rounded-lg border border-gray-200/80 bg-white p-2.5 dark:border-gray-700/60 dark:bg-gray-900/60 text-xs">
+                                <template x-if="partnerVerificationResult.data.payment_status || partnerVerificationResult.data.status">
+                                    <div class="flex items-center justify-between py-0.5 border-b border-gray-100 dark:border-gray-800">
+                                        <span class="text-3xs font-medium text-gray-400">Statut paiement :</span>
+                                        <span class="font-bold uppercase text-3xs px-2 py-0.5 rounded-full"
+                                            :class="['succeeded', 'completed', 'success'].includes(String(partnerVerificationResult.data.payment_status || partnerVerificationResult.data.status).toLowerCase())
+                                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'"
+                                            x-text="partnerVerificationResult.data.payment_status || partnerVerificationResult.data.status"></span>
+                                    </div>
+                                </template>
+                                <template x-if="partnerVerificationResult.data.transaction_id">
+                                    <div class="flex items-center justify-between py-0.5 border-b border-gray-100 dark:border-gray-800">
+                                        <span class="text-3xs font-medium text-gray-400">ID Transaction :</span>
+                                        <span class="font-mono text-3xs font-semibold text-indigo-600 dark:text-indigo-400" x-text="partnerVerificationResult.data.transaction_id"></span>
+                                    </div>
+                                </template>
+                                <template x-if="partnerVerificationResult.data.amount">
+                                    <div class="flex items-center justify-between py-0.5">
+                                        <span class="text-3xs font-medium text-gray-400">Montant :</span>
+                                        <span class="font-semibold text-gray-800 dark:text-gray-100 text-3xs" x-text="(partnerVerificationResult.data.amount) + ' ' + (partnerVerificationResult.data.currency || 'XOF')"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        {{-- Code JSON brut avec couleurs forcées haute lisibilité (fond sombre #0b0f19, texte ultra-clair #f8fafc) --}}
+                        <pre class="max-h-52 overflow-x-auto rounded-lg p-3 font-mono text-2xs leading-relaxed shadow-inner"
+                            style="background-color: #0b0f19 !important; color: #f8fafc !important; border: 1px solid #1e293b !important; white-space: pre-wrap !important; word-break: break-all !important;"
                             x-text="JSON.stringify(partnerVerificationResult?.data, null, 2)"></pre>
                     </div>
 
                 </div>
 
                 {{-- Footer du modal partenaire --}}
-                <div class="mt-6 flex justify-end gap-2">
+                <div class="mt-5 flex justify-end gap-2">
                     <button type="button" @click="closePartnerModal()"
-                        class="rounded-xl bg-gray-100 px-5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                        class="rounded-xl bg-gray-100 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
                         Fermer
                     </button>
                 </div>
@@ -1153,6 +1201,7 @@
                     partnerVerificationError: null,
                     verifyingPartnerName: '',
                     verifyingPartnerId: '',
+                    copiedPartnerData: false,
 
                     init() {
                         if (this.initialCustomerId || window.location.search.includes('id_customer')) {
