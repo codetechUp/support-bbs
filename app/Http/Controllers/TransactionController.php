@@ -53,10 +53,13 @@ class TransactionController extends Controller
                 'Impossible de charger la liste des clients pour le moment.';
         }
 
+        $initialCustomerId = $request->query('id_customer');
+
         return view('support.transactions.index', [
             'initialQuery' => $queryId,
             'initialType' => $type,
             'initialResult' => $initialResult,
+            'initialCustomerId' => $initialCustomerId,
             'customers' => $customers,
             'customersError' => $customersError,
         ]);
@@ -155,6 +158,34 @@ class TransactionController extends Controller
             $validated['debut'],
             $validated['fin']
         );
+
+        return response()->json($result);
+    }
+
+    /**
+     * Vérifie une transaction directement chez le partenaire.
+     *
+     * POST /support/transactions/verify-partner ou POST /searchTrByPartnerId
+     * Body: { "partner": "...", "id_partner": "..." }
+     */
+    public function verifyPartner(Request $request): JsonResponse
+    {
+        $partner = trim((string) ($request->input('partner') ?? ''));
+        $idPartner = trim((string) (
+            $request->input('id_partner')
+            ?? $request->input('id_tr_partenaire')
+            ?? $request->input('partner_transaction_id')
+            ?? ''
+        ));
+
+        if ($partner === '' || $idPartner === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Les paramètres "partner" et "id_partner" sont obligatoires pour la vérification.',
+            ], 422);
+        }
+
+        $result = $this->transactionService->searchByPartnerId($partner, $idPartner);
 
         return response()->json($result);
     }

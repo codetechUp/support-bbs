@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:support|admin'])->prefix('support')->name('supp
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::post('/transactions/search', [TransactionController::class, 'search'])->name('transactions.search');
     Route::post('/transactions/customer-search', [TransactionController::class, 'searchCustomerTransactions'])->name('transactions.customer-search');
+    Route::post('/transactions/verify-partner', [TransactionController::class, 'verifyPartner'])->name('transactions.verify-partner');
 });
 
 // Endpoint direct demandé : GET /searchTrByInternalId/:internal_id
@@ -69,3 +70,7 @@ Route::get('/searchTrByInternalId/{internal_id}', [TransactionController::class,
 // Endpoint direct : Recherche par external_id
 Route::match(['get', 'post'], '/searchTrByExternalId/{external_id?}', [TransactionController::class, 'searchByExternalIdEndpoint'])
     ->name('search.external');
+
+// Endpoint direct demandé : POST /searchTrByPartnerId
+Route::post('/searchTrByPartnerId', [TransactionController::class, 'verifyPartner'])
+    ->name('search.partner');

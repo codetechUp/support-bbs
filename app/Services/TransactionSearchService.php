@@ -315,6 +315,116 @@ class TransactionSearchService
         }
     }
 
+    /**
+     * Vérifie une transaction directement chez le partenaire via l'endpoint dédié.
+     *
+     * POST /searchTrByPartnerId
+     * Payload: { "partner": "...", "id_partner": "..." }
+     */
+    public function searchByPartnerId(string $partner, string $idPartner): array
+    {
+        $partner = trim($partner);
+        $idPartner = trim($idPartner);
+
+        if ($partner === '' || $idPartner === '') {
+            return [
+                'success' => false,
+                'partner' => $partner,
+                'id_partner' => $idPartner,
+                'message' => 'Le nom du partenaire et l’identifiant partenaire (id_partner) sont obligatoires.',
+                'data' => null,
+            ];
+        }
+
+        $url = config('services.manypaycash.search_by_partner_url');
+
+        if (! is_string($url) || trim($url) === '') {
+            return [
+                'success' => false,
+                'partner' => $partner,
+                'id_partner' => $idPartner,
+                'message' => 'URL de vérification partenaire ManyPayCash non configurée.',
+                'data' => null,
+            ];
+        }
+
+        try {
+            $response = $this->apiRequest()
+                ->post($url, [
+                    'partner' => $partner,
+                    'id_partner' => $idPartner,
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('Échec vérification ManyPayCash par partner et id_partner', [
+                    'status' => $response->status(),
+                    'partner' => $partner,
+                    'id_partner' => $idPartner,
+                ]);
+
+                return [
+                    'success' => false,
+                    'partner' => $partner,
+                    'id_partner' => $idPartner,
+                    'http_status' => $response->status(),
+                    'message' => 'Erreur de communication avec l’API distante ('.$response->status().').',
+                    'data' => $response->json() ?? null,
+                ];
+            }
+
+            $rawBody = trim($response->body());
+            $payload = $response->json();
+
+            if ($payload === null && $rawBody === '') {
+                return [
+                    'success' => false,
+                    'partner' => $partner,
+                    'id_partner' => $idPartner,
+                    'message' => 'Le partenaire a renvoyé une réponse vide (aucune donnée trouvée).',
+                    'data' => null,
+                ];
+            }
+
+            // Détection si l'API ManyPayCash signale une erreur du partenaire (ex: {"code":400,"message":"error","reponse":""})
+            $isPartnerError = is_array($payload) && (
+                (isset($payload['code']) && (int) $payload['code'] >= 400)
+                || (isset($payload['message']) && strtolower((string) $payload['message']) === 'error')
+            );
+
+            if ($isPartnerError) {
+                return [
+                    'success' => false,
+                    'partner' => $partner,
+                    'id_partner' => $idPartner,
+                    'message' => 'Le partenaire ('.$partner.') a retourné un statut d’erreur ou n’a pas pu valider cette transaction.',
+                    'data' => $payload,
+                ];
+            }
+
+            return [
+                'success' => true,
+                'partner' => $partner,
+                'id_partner' => $idPartner,
+                'message' => 'Vérification partenaire effectuée avec succès.',
+                'data' => $payload ?? ['raw' => $rawBody],
+            ];
+        } catch (\Throwable $e) {
+            Log::error('Exception vérification ManyPayCash par partner et id_partner', [
+                'exception' => get_class($e),
+                'partner' => $partner,
+                'id_partner' => $idPartner,
+            ]);
+
+            return [
+                'success' => false,
+                'partner' => $partner,
+                'id_partner' => $idPartner,
+                'message' => 'Une erreur réseau est survenue lors de la vérification partenaire.',
+                'data' => null,
+            ];
+        }
+    }
+
     public function getCustomers(): array
     {
         $url = config('services.manypaycash.customers_url');
@@ -483,7 +593,18 @@ class TransactionSearchService
 
                 'partner' => $item['partenaire'] ?? $item['partner'] ?? null,
 
-                'partner_transaction_id' => $item['idTrPartenaire']
+                'id_partner' => $item['id_tr_partenaire']
+                    ?? $item['idTrPartenaire']
+                    ?? $item['id_partner']
+                    ?? null,
+
+                'id_tr_partenaire' => $item['id_tr_partenaire']
+                    ?? $item['idTrPartenaire']
+                    ?? $item['id_partner']
+                    ?? null,
+
+                'partner_transaction_id' => $item['id_tr_partenaire']
+                    ?? $item['idTrPartenaire']
                     ?? $item['id_partner']
                     ?? null,
 
