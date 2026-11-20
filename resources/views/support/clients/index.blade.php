@@ -66,31 +66,33 @@
                     <div class="relative flex-1">
                         {{-- Icône Loupe OU Spinner de recherche actif --}}
                         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                            <svg x-show="!isSearching" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg x-show="!isSearching" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <svg x-show="isSearching" x-cloak class="h-5 w-5 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg x-show="isSearching" x-cloak class="h-5 w-5 animate-spin text-brand-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                         </div>
 
-                        <input type="text"
-                            :value="rawSearchInput"
-                            @input="onSearchInput($event.target.value)"
+                        <input type="text" :value="rawSearchInput" @input="onSearchInput($event.target.value)"
                             placeholder="Rechercher par nom de client, entreprise, Partner ID ou email..."
                             class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-24 text-sm text-gray-800 placeholder:text-gray-400 shadow-theme-xs transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500" />
 
                         {{-- Indicateur de recherche et bouton effacer --}}
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 gap-2">
-                            <span x-show="isSearching" x-cloak class="text-xs font-medium text-brand-600 dark:text-brand-400 animate-pulse">
+                            <span x-show="isSearching" x-cloak
+                                class="text-xs font-medium text-brand-600 dark:text-brand-400 animate-pulse">
                                 Recherche...
                             </span>
                             <button type="button" x-show="rawSearchInput.length > 0" @click="clearSearch()"
                                 class="rounded-lg p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
@@ -98,7 +100,8 @@
 
                     {{-- Sélecteur de Tri --}}
                     <div class="flex items-center gap-2">
-                        <label for="client_sort_by" class="shrink-0 text-3xs font-semibold uppercase tracking-wider text-gray-400">
+                        <label for="client_sort_by"
+                            class="shrink-0 text-3xs font-semibold uppercase tracking-wider text-gray-400">
                             Trier par :
                         </label>
                         <select id="client_sort_by" x-model="sortBy" @change="onFilterChange()"
@@ -121,7 +124,8 @@
                     <div class="flex flex-col min-w-[170px] flex-1 sm:flex-initial">
                         <label class="mb-1 text-3xs font-semibold uppercase tracking-wider text-gray-400">
                             Statut Compte
-                            <span class="text-3xs font-normal text-gray-400" x-show="availableStatuses.length > 0" x-text="'(' + availableStatuses.length + ')'"></span>
+                            <span class="text-3xs font-normal text-gray-400" x-show="availableStatuses.length > 0"
+                                x-text="'(' + availableStatuses.length + ')'"></span>
                         </label>
                         <select x-model="selectedStatus" @change="onFilterChange()"
                             class="h-10 rounded-xl border border-gray-200 bg-gray-50 px-3 text-xs font-medium text-gray-700 transition focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
@@ -136,7 +140,8 @@
                     <div class="flex flex-col min-w-[170px] flex-1 sm:flex-initial">
                         <label class="mb-1 text-3xs font-semibold uppercase tracking-wider text-gray-400">
                             Environnement
-                            <span class="text-3xs font-normal text-gray-400" x-show="availableEnvironments.length > 0" x-text="'(' + availableEnvironments.length + ')'"></span>
+                            <span class="text-3xs font-normal text-gray-400" x-show="availableEnvironments.length > 0"
+                                x-text="'(' + availableEnvironments.length + ')'"></span>
                         </label>
                         <select x-model="selectedEnv" @change="onFilterChange()"
                             class="h-10 rounded-xl border border-gray-200 bg-gray-50 px-3 text-xs font-medium text-gray-700 transition focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
@@ -155,7 +160,8 @@
                         <button type="button" @click="resetFilters()" x-show="hasActiveFilters"
                             class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-red-200 bg-red-50/70 px-3.5 text-xs font-semibold text-red-600 transition hover:bg-red-100 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40">
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                             Effacer les filtres
                         </button>
@@ -170,9 +176,11 @@
                 <div class="flex items-center gap-2">
                     <span x-show="isSearching" class="inline-block h-2 w-2 rounded-full bg-brand-500 animate-ping"></span>
                     <span>
-                        Affichage de <strong class="text-gray-800 dark:text-white" x-text="filteredClients.length > 0 ? startIndex : 0"></strong>
+                        Affichage de <strong class="text-gray-800 dark:text-white"
+                            x-text="filteredClients.length > 0 ? startIndex : 0"></strong>
                         à <strong class="text-gray-800 dark:text-white" x-text="endIndex"></strong>
-                        sur <strong class="text-gray-800 dark:text-white" x-text="filteredClients.length"></strong> client(s)
+                        sur <strong class="text-gray-800 dark:text-white" x-text="filteredClients.length"></strong>
+                        client(s)
                         (total : <span x-text="data.clients.length"></span>)
                     </span>
                 </div>
@@ -193,16 +201,14 @@
             {{-- ============================================================
                  LOADER DE CHARGEMENT VISUEL SUR LE TABLEAU (RECHERCHE & SYNC)
             ============================================================= --}}
-            <div x-show="isLoading || isSearching" x-cloak
-                x-transition:enter="transition ease-out duration-150"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-100"
-                x-transition:leave-start="opacity-100"
+            <div x-show="isLoading || isSearching" x-cloak x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
                 class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/85 backdrop-blur-xs dark:bg-gray-900/85">
                 <div class="flex flex-col items-center gap-3 p-6 text-center">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 shadow-theme-xs dark:bg-brand-500/15 dark:text-brand-400">
+                    <div
+                        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 shadow-theme-xs dark:bg-brand-500/15 dark:text-brand-400">
                         <svg class="h-7 w-7 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -210,9 +216,11 @@
                     </div>
                     <div>
                         <p class="text-sm font-bold text-gray-800 dark:text-white"
-                           x-text="isSearching ? 'Filtrage des clients en cours...' : 'Chargement des clients en cours...'"></p>
+                            x-text="isSearching ? 'Filtrage des clients en cours...' : 'Chargement des clients en cours...'">
+                        </p>
                         <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400"
-                           x-text="isSearching ? 'Application de vos critères de recherche' : 'Synchronisation des partenaires avec l\'API ManyPayCash'"></p>
+                            x-text="isSearching ? 'Application de vos critères de recherche' : 'Synchronisation des partenaires avec l\'API ManyPayCash'">
+                        </p>
                     </div>
                 </div>
             </div>
@@ -275,7 +283,7 @@
                                         class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
                                         :class="client.environment === 'Production' ?
                                             'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400' :
-                                             'bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400'">
+                                            'bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400'">
                                         <span class="h-1.5 w-1.5 rounded-full"
                                             :class="client.environment === 'Production' ? 'bg-brand-500' : 'bg-purple-500'"></span>
                                         <span x-text="client.environment"></span>
@@ -289,11 +297,14 @@
 
                                 {{-- Raccourci vers les transactions du client --}}
                                 <td class="whitespace-nowrap px-6 py-4 text-right">
-                                    <a :href="'{{ route('support.transactions.index') }}?id_customer=' + encodeURIComponent(client.id || client.partner_id) + '&tab=customer'"
+                                    <a :href="'{{ route('support.transactions.index') }}?id_customer=' + encodeURIComponent(client
+                                        .id || client.partner_id) + '&tab=customer'"
                                         title="Voir directement les transactions de ce client"
                                         class="inline-flex items-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50/80 px-3 py-1.5 text-xs font-semibold text-brand-700 shadow-theme-xs transition hover:bg-brand-100 hover:shadow-theme-sm dark:border-brand-900/50 dark:bg-brand-900/20 dark:text-brand-300 dark:hover:bg-brand-900/40">
-                                        <svg class="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        <svg class="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                         </svg>
                                         <span>Transactions</span>
                                     </a>
@@ -314,8 +325,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                             d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    <h3 class="mt-2 text-sm font-semibold text-gray-800 dark:text-white">Aucun client ne correspond aux critères</h3>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Modifiez votre recherche ou réinitialisez les filtres sélectionnés.</p>
+                    <h3 class="mt-2 text-sm font-semibold text-gray-800 dark:text-white">Aucun client ne correspond aux
+                        critères</h3>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Modifiez votre recherche ou réinitialisez les
+                        filtres sélectionnés.</p>
                     <button type="button" @click="resetFilters()"
                         class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-brand-500 px-3.5 py-2 text-xs font-medium text-white transition hover:bg-brand-600">
                         Réinitialiser tous les filtres
@@ -338,7 +351,8 @@
                     </span>
 
                     <div class="flex items-center gap-1.5 border-l border-gray-200 pl-3 dark:border-gray-700">
-                        <label for="client_per_page" class="text-2xs uppercase tracking-wider text-gray-400 font-semibold">Par page :</label>
+                        <label for="client_per_page"
+                            class="text-2xs uppercase tracking-wider text-gray-400 font-semibold">Par page :</label>
                         <select id="client_per_page" x-model.number="perPage" @change="onFilterChange()"
                             class="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 transition focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
                             <option :value="10">10</option>
@@ -369,9 +383,9 @@
                                 </template>
                                 <template x-if="p !== '...'">
                                     <button type="button" @click="goToPage(p)"
-                                        :class="currentPage === p
-                                            ? 'bg-brand-500 text-white font-bold shadow-theme-xs'
-                                            : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
+                                        :class="currentPage === p ?
+                                            'bg-brand-500 text-white font-bold shadow-theme-xs' :
+                                            'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
                                         class="h-8 min-w-[32px] rounded-lg px-2 text-xs transition font-medium"
                                         x-text="p">
                                     </button>
@@ -461,7 +475,8 @@
                     get availableStatuses() {
                         const set = new Set();
                         (this.data?.clients || []).forEach(c => {
-                            if (c.account_status && String(c.account_status).trim() !== '' && c.account_status !== 'UNKNOWN') {
+                            if (c.account_status && String(c.account_status).trim() !== '' && c.account_status !==
+                                'UNKNOWN') {
                                 set.add(String(c.account_status).trim());
                             }
                         });
@@ -471,7 +486,8 @@
                     get availableEnvironments() {
                         const set = new Set();
                         (this.data?.clients || []).forEach(c => {
-                            if (c.environment && String(c.environment).trim() !== '' && c.environment !== 'Inconnu') {
+                            if (c.environment && String(c.environment).trim() !== '' && c.environment !==
+                                'Inconnu') {
                                 set.add(String(c.environment).trim());
                             }
                         });
@@ -568,7 +584,9 @@
                         const current = this.currentPage;
 
                         if (total <= 7) {
-                            return Array.from({ length: total }, (_, i) => i + 1);
+                            return Array.from({
+                                length: total
+                            }, (_, i) => i + 1);
                         }
 
                         if (current <= 4) {

@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SandboxTransactionController;
+use App\Http\Controllers\SandboxUserController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +49,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\SandboxCustomerController;
 use App\Http\Controllers\TransactionController;
 use App\Models\User;
 
@@ -61,6 +65,66 @@ Route::middleware(['auth', 'role:support|admin'])->prefix('support')->name('supp
     Route::post('/transactions/search', [TransactionController::class, 'search'])->name('transactions.search');
     Route::post('/transactions/customer-search', [TransactionController::class, 'searchCustomerTransactions'])->name('transactions.customer-search');
     Route::post('/transactions/verify-partner', [TransactionController::class, 'verifyPartner'])->name('transactions.verify-partner');
+
+    // Gestion des utilisateurs
+    Route::get('/users', [UserController::class, 'index'])
+        ->name('users.index');
+
+    Route::get('/users/data', [UserController::class, 'data'])
+        ->name('users.data');
+
+    Route::get(
+        '/sandbox/customers/data',
+        [SandboxCustomerController::class, 'data']
+    )->name('sandbox.customers.data');
+
+    Route::get(
+        '/sandbox/customers',
+        [SandboxCustomerController::class, 'index']
+    )->name('sandbox.customers.index');
+
+    Route::get(
+        '/sandbox/customers/create',
+        [SandboxCustomerController::class, 'create']
+    )->name('sandbox.customers.create');
+
+    Route::post(
+        '/sandbox/customers',
+        [SandboxCustomerController::class, 'store']
+    )->name('sandbox.customers.store');
+
+    // Consultation des utilisateurs Sandbox
+    Route::get('/sandbox/users/data', [SandboxUserController::class, 'data'])
+        ->name('sandbox.users.data');
+
+    Route::get('/sandbox/users', [SandboxUserController::class, 'index'])
+        ->name('sandbox.users.index');
+
+    Route::get('/sandbox/users/{email}', [SandboxUserController::class, 'show'])
+        ->where('email', '.*')
+        ->name('sandbox.users.show');
+    Route::post(
+        '/sandbox/users/{email}/send-credentials',
+        [SandboxUserController::class, 'sendCredentials']
+    )
+        ->where('email', '[^/]+')
+        ->name('sandbox.users.send-credentials');
+
+    // Consultation des utilisateurs associés à un client Sandbox
+    Route::get(
+        '/sandbox/customers/{idCustomer}/users',
+        [SandboxUserController::class, 'byCustomer']
+    )
+        ->whereNumber('idCustomer')
+        ->name('sandbox.customers.users');
+
+    // Consultation des transactions Sandbox
+    Route::get('/sandbox/transactions/data', [SandboxTransactionController::class, 'data'])
+        ->name('sandbox.transactions.data');
+
+    Route::get('/sandbox/transactions', [SandboxTransactionController::class, 'index'])
+        ->name('sandbox.transactions.index');
+
 });
 
 // Endpoint direct demandé : GET /searchTrByInternalId/:internal_id

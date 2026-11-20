@@ -55,6 +55,11 @@ return [
             'MANYPAYCASH_CUSTOMER_TRANSACTIONS_URL',
             'https://www.manypaycash.com/api/support/customerTransactions'
         ),
+
+        'users_url' => env(
+            'MANYPAYCASH_USERS_URL',
+            'https://www.manypaycash.com/api/support/getUsers'
+        ),
     ],
 
 ];
